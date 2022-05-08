@@ -2,12 +2,11 @@ const puppeteer = require('puppeteer-core');
 const fs = require("fs");
 const analysis = getAnalysis()
 function getAnalysis() {
-    return {}//TODO
-}
+    return{}}
 (async () => {
-
     const browser = await puppeteer.launch({
         "executablePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+        //,headless:false
     });
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
     const page = await browser.newPage();
@@ -35,6 +34,29 @@ function getAnalysis() {
             var div = addElement(document, "div", detail, "f-flvc")
             addElement(document, "p", div, "f-fs14 name s-fc3 f-thide f-cor-f", song.songName)
             addElement(document, "p", detail, "f-fs12 artist s-fc2 f-thide f-cor-g", song.artistNames)
+        }
+        function loadListenCount(document,analysis){
+            var songsc=analysis.data.listenSongs
+            var count=analysis.data.listenWeekCount
+            var time=analysis.data.listenWeekTime/60/60
+            var trunctime=Math.trunc(time)
+            var minutetime=Math.round((time-trunctime)*60)
+            var base=addContainer(document,"his-block")
+            var container=addElement(document,"div",base,"b-container b-cont-bg his-cont")
+            var time=addElement(document,"div",container,"his-item")
+            var timep=addElement(document,"p",time,"t f-cor-c")
+            addElement(document,"span",timep,"f-cor-b",trunctime)
+            timep.append(" 小时 ")
+            addElement(document,"span",timep,"f-cor-b",minutetime)
+            timep.append(" 分")
+            addElement(document,"div",container,"his-gap")
+            var countd=addElement(document,"div",container,"his-item")
+            var countp=addElement(document,"p",countd,"t f-cor-c")
+            addElement(document,"span",countp,"f-cor-b",count)
+            countp.append("次")
+            var counts=addElement(document,"p",countd,"s f-cor-c")
+            counts.append("本周已听")
+            addElement(document,"span",counts,"f-cor-d",songsc+"首歌")
         }
         function loadKeyword(document, analysis) {
             var keyword = analysis.data.keyword
@@ -65,7 +87,7 @@ function getAnalysis() {
                     var time = "清晨"
                 }
                 var detail = addElement(document, "div", li, "f-fs14 type s-fc1 f-cor-b")
-                detail.append(date.getMonth() + "月" + date.getDay() + "日" + text)
+                detail.append(date.getMonth()+1 + "月" + date.getDate() + "日" + text)
                 addElement(document, "span", detail, "f-cor-d", time + fixTime(date.getHours()) + ":" + fixTime(date.getMinutes()))
                 drawSongDetail(document, song, li)
             }
@@ -81,11 +103,15 @@ function getAnalysis() {
             drawLi(ul, endSong, endDate, true)
         }
         function main() {
+            loadListenCount(document,analysis)
             loadKeyword(document, analysis)
             loadStartEnd(document, analysis)
         }
         main()
     }, analysis)
-    await page.screenshot({ path: "D:/Program Source/NeteaseMusicTimeMachine/a.png", fullPage: true })
+    await page.screenshot(
+        { 
+            path: "D:/Program Source/NeteaseMusicTimeMachine/a.png", 
+            fullPage: true })
     await browser.close()
 })();
