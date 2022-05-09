@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer-core");
+const puppeteer = require("puppeteer");
 const formdata=require("form-data")
 const echarts = require("echarts");
 const axios=require('axios');
@@ -38,7 +38,6 @@ async function pushWechat(imageUrl){
 (async () => {
     const analysis=await getAnalysis()
     const browser = await puppeteer.launch({
-        executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         defaultViewport: {
             width: 500,
             height: 2000
