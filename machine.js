@@ -532,7 +532,7 @@ async function getAnalysis() {
     }, analysis)
     await page.screenshot(
         {
-            path: "D:/Program Source/NeteaseMusicTimeMachine/a.png",
+            path: "a.png",
             fullPage: true
         })
     await browser.close()
