@@ -15,13 +15,23 @@ async function getAnalysis() {
     return JSON.parse(data).reportFlowData.detail[0]
 }
 async function uploadImage(imagePath){
+    async function getLength(form){
+        return new Promise((resolve,reject)=>{
+            form.getLength((err,length)=>{
+                if(err) reject(err)
+                else resolve(length)
+            })
+        })
+    }
     var smmsToken=process.env.SMMS_TOKEN
+    var smmsToken="SeGjnwWvbTZyDRSWfzuq8NFLiRd5SLna"
     var form=new formdata()
     form.append("smfile",fs.createReadStream(imagePath))
     var response=await new axios.Axios({
         headers:{
             "Content-Type":"multipart/form-data",
-            "Authorization":smmsToken
+            "Authorization":smmsToken,
+            "Content-Length":await getLength(form)
         },
         data:form
     }).post("https://sm.ms/api/v2/upload")
