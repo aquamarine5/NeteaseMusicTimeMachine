@@ -16,7 +16,7 @@ async function getAnalysis() {
 }
 async function uploadImage(imagePath){
     var smmsToken=process.env.SMMS_TOKEN
-    var form=new FormData()
+    var form=new formdata()
     form.append("smfile",fs.createReadStream(imagePath))
     var response=await new axios.Axios({
         headers:{
