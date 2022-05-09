@@ -1,17 +1,28 @@
-const puppeteer = require("puppeteer-core");
+const puppeteer = require("puppeteer");
 const echarts = require("echarts");
+const axios=require('axios');
 const fs = require("fs");
-const analysis = getAnalysis()
-function getAnalysis() {
-    return {}}
+async function getAnalysis() {
+    var cookie=process.env.NETEASEMUSIC_COOKIE
+    var response=await new axios.Axios({
+        headers:{
+            Cookie:cookie
+        }
+    }).get("https://music.163.com/prime/m/viptimemachine")
+    var data=new RegExp("window.__INITIAL_DATA__ = ({.+})</script>").exec(response.data)[0]
+    data=data.replace("window.__INITIAL_DATA__ = ","").replace("</script>","")
+    return JSON.parse(data).reportFlowData.detail[0]
+}
 (async () => {
+    const analysis=await getAnalysis()
     const browser = await puppeteer.launch({
-        "executablePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+        //executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         defaultViewport: {
             width: 500,
             height: 2000
         }
-        , headless: false, dumpio: true
+        //, headless: false,
+         ,dumpio: true
     });
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
     const page = await browser.newPage();
@@ -102,8 +113,9 @@ function getAnalysis() {
                         l = []
                     } else c++; l.push(element)
                 })
+                if(c!=0) j.push(l);i.push(c)
                 var ii = Math.max(...i)
-                var d = j[i.find(e => e == ii)]
+                var d = j[i.findIndex(e => e == ii)]
                 var length = d.length
                 var gridp = Math.min(...d)
             }
@@ -111,7 +123,6 @@ function getAnalysis() {
                 var length = 7
                 var gridp = mine
             }
-            console.log(hours)
             addElement(document, "p", container, "rpt-main-tit f-cor-b", "连续" + length + "天听歌超过" + gridp + "小时")
             var panel = addElement(document, "div", container, "bc-r-cont")
             var chart = echarts.init(panel)
@@ -221,7 +232,7 @@ function getAnalysis() {
                     tdata.push({
                         value: date.getMonth() + 1 + "." + date.getDate(),
                         textStyle: {
-                            align: "left"
+                            align: index==0?"left":"right"
                         }
                     })
                 }
@@ -290,7 +301,6 @@ function getAnalysis() {
                 })
                 index++;
             })
-            console.log(sdata)
             var container = addContainer(document)
             addElement(document, "p", container, "f-fs16 f-fw1 b-cont-tit f-cor-b", "音乐情绪")
             var detail = addElement(document, "p", container, "f-cor-b f-fs14")
@@ -414,7 +424,6 @@ function getAnalysis() {
                 ["#8C9BFE", "#B3CBF5"],
                 ["#59DEE2", "#A5FCFC"]
             ]
-            console.log(percents)
             percents.forEach(element => {
                 datas.push({
                     name: element.startYear + "-" + element.endYear + "s",
@@ -526,5 +535,5 @@ function getAnalysis() {
             path: "D:/Program Source/NeteaseMusicTimeMachine/a.png",
             fullPage: true
         })
-    //await browser.close()
+    await browser.close()
 })();
