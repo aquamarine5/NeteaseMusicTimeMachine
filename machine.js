@@ -212,6 +212,161 @@ function getAnalysis() {
                 ]
             })
         }
+        function loadEmotion(document, analysis) {
+            var wstime = analysis.weekStartTime
+            var tdata = []
+            for (let index = 0; index < 7; index++) {
+                var date = new Date(wstime + 86400000 * index)
+                if (index == 0 || index == 6) {
+                    tdata.push({
+                        value: date.getMonth() + 1 + "." + date.getDate(),
+                        textStyle: {
+                            align: "left"
+                        }
+                    })
+                }
+                else {
+                    tdata.push(date.getMonth() + 1 + "." + date.getDate())
+                }
+            }
+            var buffer = []
+            var sdata = []
+            const colorList = [
+                ["#6353F0", "#4CA5F4", "#4493F6", "rgba(68, 147, 246, 0)"],
+                ["#41D395", "#B3F474", "#40E58D", "rgba(64, 229, 141, 0)"],
+                ["#FF5C29", "#FF78C2", "#FF5D64", "rgba(255, 120, 194, 0)"],
+                ["#FF6F2D", "#FFD02D", "#FF8B45", "rgba(255, 139, 69, 0)"]
+            ]
+            var index = 0
+            analysis.data.musicEmotion.emotions.forEach(element => {
+                buffer = []
+                element.detail.forEach(celement => {
+                    buffer.push(Math.trunc(parseFloat(celement.percent) * 100))
+                })
+                sdata.push({
+                    type: "line",
+                    smooth: true,
+                    symbol: "none",
+                    lineStyle: {
+                        color: {
+                            type: "linear",
+                            x: 0,
+                            y: 0,
+                            x2: 1,
+                            y2: 0,
+                            colorStops: [
+                                {
+                                    offset: 0,
+                                    color: colorList[index][0]
+                                },
+                                {
+                                    offset: 1,
+                                    color: colorList[index][1]
+                                }
+                            ]
+                        },
+                        width: 2
+                    },
+                    areaStyle: {
+                        color: {
+                            type: "linear",
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [
+                                {
+                                    offset: 0,
+                                    color: colorList[index][2]
+                                },
+                                {
+                                    offset: 1,
+                                    color: colorList[index][3]
+                                }
+                            ]
+                        }
+                    },
+                    "data": buffer
+                })
+                index++;
+            })
+            console.log(sdata)
+            var container = addContainer(document)
+            addElement(document, "p", container, "f-fs16 f-fw1 b-cont-tit f-cor-b", "音乐情绪")
+            var detail = addElement(document, "p", container, "f-cor-b f-fs14")
+            detail.append("你本周的音乐情绪是")
+            addElement(document, "span", detail, "f-cor-d f-fw1", analysis.data.musicEmotion.subTitle[0])
+            detail.append("与")
+            addElement(document, "span", detail, "f-cor-d f-fw1", analysis.data.musicEmotion.subTitle[1])
+            var legend = addElement(document, "div", container, "mood-legend")
+            const label = ["快乐、兴奋", "浪漫、甜蜜",
+                "思念、抒情", "伤感、孤独"]
+            for (let index = 3; index >= 0; index--) {
+                var item = addElement(document, "div", legend, "m-item f-cor-g")
+                var line = addElement(document, "span", item, "m-i-line")
+                line.setAttribute("style", "background-image:linear-gradient(90deg, " +
+                    colorList[index][0] + " 0%, " + colorList[index][1] + " 100%)")
+                addElement(document, "span", item, "", label[3 - index])
+
+            }
+            var chart = echarts.init(addElement(document, "div", container, "mood-chart"))
+            chart.setOption({
+                animation:false,
+                grid: {
+                    top: 30,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    width: 'auto',
+                    containLabel: true
+                },
+                series: sdata,
+                xAxis: {
+                    show: true,
+                    boundaryGap: false,
+                    axisLabel: {
+                        color: "rgba(0,0,0,0.4)",
+                        fontSize: 10,
+                        interval: 0
+                    },
+                    axisLine: {
+                        show: true,
+                        lineStyle: {
+                            type: "solid",
+                            color: "rgba(0,0,0, 0.05)"
+                        }
+                    },
+                    axisTick: {
+                        show: false
+                    },
+                    data: tdata
+                },
+                yAxis: {
+                    name: "(占比%)",
+                    type: "value",
+                    show: true,
+                    nameTextStyle: {
+                        fontSize: 10,
+                        color: "rgba(0,0,0,0.4)"
+                    },
+                    axisLabel: {
+                        show: true,
+                        color: "rgba(0,0,0,0.4)",
+                        fontSize: 10
+                    },
+                    splitNumber: 5,
+                    splitLine: {
+                        lineStyle: {
+                            color: [
+                                "rgba(0,0,0,0.08)"
+                            ],
+                            type: "dashed",
+                            width: 0.5
+                        }
+                    }
+                }
+            })
+        }
         function loadCommonStyle(document, analysis) {
             var container = addContainer(document)
             addElement(document, "p", container, "f-fs16 f-fw1 b-cont-tit f-cor-b", "常听曲风")
@@ -362,6 +517,7 @@ function getAnalysis() {
             loadStartEnd(document, analysis)
             loadCommonStyle(document, analysis)
             loadYear(document, analysis)
+            loadEmotion(document, analysis)
         }
         main()
     }, analysis)
