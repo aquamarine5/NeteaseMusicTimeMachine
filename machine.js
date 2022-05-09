@@ -9,16 +9,15 @@ function getAnalysis() {
         "executablePath": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         defaultViewport: {
             width: 500,
-            height: 1500
+            height: 2000
         }
-        , headless: false
+        , headless: false, dumpio: true
     });
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
     const page = await browser.newPage();
     await page.setContent(baseHtml);
 
     await page.evaluate(analysis => {
-
         function addElement(document, tagName, parent, className = "", text = "") {
             var element = document.createElement(tagName);
             if (className != "") element.setAttribute("class", className);
@@ -39,6 +38,7 @@ function getAnalysis() {
             var detail = addElement(document, "div", area, "f-flex11 content")
             var div = addElement(document, "div", detail, "f-flvc")
             addElement(document, "p", div, "f-fs14 name s-fc3 f-thide f-cor-f", song.songName)
+            if (song.tag != null) addElement(document, "span", div, "name-label f-cor-d f-flex00", song.tag)
             addElement(document, "p", detail, "f-fs12 artist s-fc2 f-thide f-cor-g", song.artistNames)
         }
         function loadListenCount(document, analysis) {
@@ -88,7 +88,7 @@ function getAnalysis() {
                 var date = new Date(element.day)
                 dates.push(date.getMonth() + 1 + ":" + date.getDate())
             })
-            var mine = Math.min(hours)
+            var mine = Math.min(...hours)
             if (mine == 0) {
                 var i = []
                 var l = []
@@ -102,19 +102,28 @@ function getAnalysis() {
                         l = []
                     } else c++; l.push(element)
                 })
-                var ii = Math.max(i)
+                var ii = Math.max(...i)
                 var d = j[i.find(e => e == ii)]
                 var length = d.length
-                var gridp = Math.min(d)
+                var gridp = Math.min(...d)
             }
             else {
                 var length = 7
                 var gridp = mine
             }
+            console.log(hours)
             addElement(document, "p", container, "rpt-main-tit f-cor-b", "连续" + length + "天听歌超过" + gridp + "小时")
             var panel = addElement(document, "div", container, "bc-r-cont")
             var chart = echarts.init(panel)
             chart.setOption({
+                grid: {
+                    top: 30,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    width: 'auto',
+                    containLabel: true
+                },
                 xAxis: {
                     type: 'category',
                     data: dates,
@@ -134,28 +143,60 @@ function getAnalysis() {
                     },
                     axisLine: {
                         lineStyle: {
-                            color: "#cadae0"
+                            color: "rgba(0,0,0,0.05)",
+                            type: "solid"
                         }
+                    },
+                    axisLabel: {
+                        color: "rgba(0.0,0.0,0.0,0.4)",
+                        fontSize: 10,
+                        interval: 0
                     }
                 },
                 yAxis: {
                     type: 'value',
+                    name: "(小时)",
+                    align: "left",
+                    padding: [0, 0, 0, -5],
                     axisLine: {
                         enabled: false
+                    },
+                    nameTextStyle: {
+                        color: "rgba(0,0,0,0.4)",
+                        fontSize: 10
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ["rgba(0,0,0,0.08)"],
+                            type: "dashed",
+                            width: 0.5
+                        }
                     }
                 },
                 series: [
                     {
                         data: hours,
                         type: 'bar',
-                        barWidth: '20%',
+                        barWidth: 8,
                         label: {
                             show: true,
                             position: "top",
-                            color: "rgb(99,178,245)"
+                            color: "rgb(99,178,245)",
+                            fontSize: 10
+                        },
+                        markLine: {
+                            data: [{
+                                name: 'yAxis参考线',
+                                yAxis: gridp
+                            }
+                            ],
+                            label: { show: false },
+                            silent: true,
+                            symbol: "none",
+                            lineStyle: { color: "rgba(99,178,245,0.3)" }
                         },
                         itemStyle: {
-                            barBorderRadius: 10,
+                            barBorderRadius: [5, 5, 0, 0],
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 {
                                     offset: 0,
@@ -170,8 +211,6 @@ function getAnalysis() {
                     }
                 ]
             })
-            window.onresize=chart.resize
-            chart.resize()
         }
         function loadCommonStyle(document, analysis) {
             var container = addContainer(document)
@@ -197,6 +236,94 @@ function getAnalysis() {
                 addElement(document, "span", bar, "f-fw1 f-fs10", Math.round(element.percent * 100) + "%")
                 index++;
             });
+        }
+        function loadYear(document, analysis) {
+            var year = analysis.data.musicYear
+            var percents = year.yearPercents
+            var singles = year.yearSingles
+            var container = addContainer(document)
+            addElement(document, "p", container, "f-fs16 f-fw1 b-cont-tit f-cor-b", "歌曲年代")
+            var detail = addElement(document, "p", container, "f-cor-b f-fs14 b-cont-sub-tit")
+            detail.append("有")
+            addElement(document, "span", detail, "f-cor-d f-fw1", year.total + "首")
+            detail.append(year.year + "s年代的歌曲，占听歌总量的")
+            addElement(document, "span", detail, "f-cor-d f-fw1", Math.trunc(parseFloat(year.percent) * 100) + "%")
+            var panel = addElement(document, "div", container, "era-r-main")
+            var chart = echarts.init(addElement(document, "div", panel, "era-chart"))
+            var datas = []
+            var index = 0
+            const colorList = [
+                ["#70BCFA", "#ACDCFF"],
+                ["#AE8BFF", "#D0BBFF"],
+                ["#9DDF78", "#CCFFB0"],
+                ["#8C9BFE", "#B3CBF5"],
+                ["#59DEE2", "#A5FCFC"]
+            ]
+            console.log(percents)
+            percents.forEach(element => {
+                datas.push({
+                    name: element.startYear + "-" + element.endYear + "s",
+                    value: Math.trunc(parseFloat(element.percent) * 100),
+                    itemStyle: {
+                        opacity: 0.8,
+                        color: {
+                            type: "linear",
+                            x: 0, x2: 1, y: 0, y2: 1,
+                            colorStops: [
+                                {
+                                    offset: 0,
+                                    color: colorList[index][0]
+                                },
+                                {
+                                    offset: 1,
+                                    color: colorList[index][1]
+                                }
+                            ]
+                        }
+                    }
+                })
+                index++;
+            })
+            chart.setOption({
+                series: [
+                    {
+                        clockwise: true,
+                        data: datas,
+                        emphasis: {
+                            scaleSize: 6
+                        },
+                        emptyCircleStyle: {
+                            color: "#fff"
+                        },
+                        label: {
+                            show: false
+                        },
+                        radius: [
+                            '45%', '90%'
+                        ],
+                        right: 0,
+                        silent: true,
+                        startAngle: 75,
+                        type: "pie"
+                    }
+                ]
+            })
+            var dislist = addElement(document, "div", panel, "era-dis-list")
+            index = 0
+            percents.forEach(element => {
+                var item = addElement(document, "div", dislist, "era-dis-item")
+                var cir = addElement(document, "div", item, "cir")
+                cir.setAttribute("style", "background-image:linear-gradient(225deg, " +
+                    colorList[index][1] + " 0%, " + colorList[index][0] + " 100%)")
+                addElement(document, "p", item, "per f-fs12 f-cor-f", Math.trunc(parseFloat(element.percent) * 100) + "%")
+                addElement(document, "p", item, "era f-fs10 f-cor-g", element.startYear + "-" + element.endYear + "s")
+                index++;
+            })
+            addElement(document, "div", container, "s-y-gap-line")
+            var ul = addElement(document, "ul", container, "u-song-list ")
+            singles.forEach(element => {
+                drawSongDetail(document, element, addElement(document, "li", ul, "song-item"))
+            })
         }
         function loadStartEnd(document, analysis) {
             function drawLi(ul, song, date, isEnd) {
@@ -234,6 +361,7 @@ function getAnalysis() {
             loadTime(document, analysis)
             loadStartEnd(document, analysis)
             loadCommonStyle(document, analysis)
+            loadYear(document, analysis)
         }
         main()
     }, analysis)
