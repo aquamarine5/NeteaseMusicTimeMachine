@@ -24,14 +24,12 @@ async function uploadImage(imagePath){
         })
     }
     var smmsToken=process.env.SMMS_TOKEN
-    var smmsToken="SeGjnwWvbTZyDRSWfzuq8NFLiRd5SLna"
     var form=new formdata()
     form.append("smfile",fs.createReadStream(imagePath))
     var response=await new axios.Axios({
         headers:{
             "Content-Type":"multipart/form-data",
-            "Authorization":smmsToken,
-            "Content-Length":await getLength(form)
+            "Authorization":smmsToken
         },
         data:form
     }).post("https://sm.ms/api/v2/upload")
