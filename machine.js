@@ -45,7 +45,7 @@ async function pushWechat(imageUrl){
 (async () => {
     const analysis=await getAnalysis()
     const browser = await puppeteer.launch({
-        executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+        //executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         defaultViewport: {
             width: 500,
             height: 2000
