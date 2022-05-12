@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer-core");
+const puppeteer = require("puppeteer");
 const formdata=require("form-data")
 const echarts = require("echarts");
 const axios=require('axios');
