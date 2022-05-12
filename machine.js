@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer");
+const formdata=require("form-data")
 const echarts = require("echarts");
 const axios=require('axios');
 const fs = require("fs");
@@ -13,14 +14,43 @@ async function getAnalysis() {
     data=data.replace("window.__INITIAL_DATA__ = ","").replace("</script>","")
     return JSON.parse(data).reportFlowData.detail[0]
 }
+async function uploadImage(imagePath){
+    async function getLength(form){
+        return new Promise((resolve,reject)=>{
+            form.getLength((err,length)=>{
+                if(err) reject(err)
+                else resolve(length)
+            })
+        })
+    }
+    var smmsToken=process.env.SMMS_TOKEN
+    var form=new formdata()
+    
+    form.append("smfile",fs.createReadStream("screenshot.png"))
+    var request=new axios.Axios({
+        headers:form.getHeaders(
+            {"Authorization":smmsToken
+        }),
+    })
+    var response=await request.post("https://sm.ms/api/v2/upload",form);
+    return JSON.parse(response.data).data.url
+}
+async function pushWechat(imageUrl){
+    var serverToken=process.env.WX_SERVER_TOKEN
+    var response=await new axios.Axios({}).get(
+        encodeURI("https://sctapi.ftqq.com/"+serverToken+".send?title=网易云&desp="+imageUrl)
+    )
+    console.log(response.data)
+}
 (async () => {
     const analysis=await getAnalysis()
     const browser = await puppeteer.launch({
+        //executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         defaultViewport: {
             width: 500,
             height: 2000
         }
-        //, headless: false,
+        //, headless: false
          ,dumpio: true
     });
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
@@ -531,8 +561,10 @@ async function getAnalysis() {
     }, analysis)
     await page.screenshot(
         {
-            path: "D:/Program Source/NeteaseMusicTimeMachine/a.png",
+            path: "screenshot.png",
             fullPage: true
         })
     await browser.close()
+    var imageUrl=await uploadImage("screenshot.png")
+    await pushWechat(imageUrl)
 })();

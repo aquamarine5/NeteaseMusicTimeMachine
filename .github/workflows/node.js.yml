@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -23,6 +23,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
+    - run: npm install puppeteer
+    - run: npm install axios
+    - run: npm install echarts
     - name: Run code and push image
+      env:
+        SMMS_TOKEN: ${{ secrets.SMMS_TOKEN }}
+        WX_SERVER_TOKEN: ${{ secrets.WX_SERVER_TOKEN }}
+        NETEASEMUSIC_COOKIE: ${{ secrets.NETEASEMUSIC_COOKIE }}
       run: node machine.js
