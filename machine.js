@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const formdata=require("form-data")
 const echarts = require("echarts");
 const axios=require('axios');
@@ -25,20 +25,19 @@ async function uploadImage(imagePath){
     }
     var smmsToken=process.env.SMMS_TOKEN
     var form=new formdata()
-    form.append("smfile",fs.createReadStream(imagePath))
-    var response=await new axios.Axios({
-        headers:{
-            "Content-Type":"multipart/form-data",
-            "Authorization":smmsToken
-        },
-        data:form
-    }).post("https://sm.ms/api/v2/upload")
-    console.log(response.data)
+    
+    form.append("smfile",fs.createReadStream("D:/a.png"))
+    var request=new axios.Axios({
+        headers:form.getHeaders(
+            {"Authorization":smmsToken
+        }),
+    })
+    var response=await request.post("https://sm.ms/api/v2/upload",form);
     return JSON.parse(response.data).data.url
 }
 async function pushWechat(imageUrl){
     var serverToken=process.env.WX_SERVER_TOKEN
-    var response=await new axios.Axios().get(
+    var response=await new axios.Axios({}).get(
         encodeURI("https://sctapi.ftqq.com/"+serverToken+".send?title=网易云&desp="+imageUrl)
     )
     console.log(response.data)
@@ -46,11 +45,12 @@ async function pushWechat(imageUrl){
 (async () => {
     const analysis=await getAnalysis()
     const browser = await puppeteer.launch({
+        executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         defaultViewport: {
             width: 500,
             height: 2000
         }
-        //, headless: false,
+        //, headless: false
          ,dumpio: true
     });
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
@@ -564,7 +564,7 @@ async function pushWechat(imageUrl){
             path: "a.png",
             fullPage: true
         })
-    await browser.close()
+    //await browser.close()
     var imageUrl=await uploadImage("a.png")
     await pushWechat(imageUrl)
 })();
