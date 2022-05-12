@@ -26,7 +26,7 @@ async function uploadImage(imagePath){
     var smmsToken=process.env.SMMS_TOKEN
     var form=new formdata()
     
-    form.append("smfile",fs.createReadStream("D:/a.png"))
+    form.append("smfile",fs.createReadStream("screenshot.png"))
     var request=new axios.Axios({
         headers:form.getHeaders(
             {"Authorization":smmsToken
@@ -561,10 +561,10 @@ async function pushWechat(imageUrl){
     }, analysis)
     await page.screenshot(
         {
-            path: "a.png",
+            path: "screenshot.png",
             fullPage: true
         })
     //await browser.close()
-    var imageUrl=await uploadImage("a.png")
+    var imageUrl=await uploadImage("screenshot.png")
     await pushWechat(imageUrl)
 })();
