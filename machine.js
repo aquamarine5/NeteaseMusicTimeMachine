@@ -564,7 +564,7 @@ async function pushWechat(imageUrl){
             path: "screenshot.png",
             fullPage: true
         })
-    //await browser.close()
+    await browser.close()
     var imageUrl=await uploadImage("screenshot.png")
     await pushWechat(imageUrl)
 })();
