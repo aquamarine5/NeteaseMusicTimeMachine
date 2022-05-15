@@ -26,6 +26,7 @@ async function uploadImage(imagePath) {
             }),
     })
     var response = await request.post("https://sm.ms/api/v2/upload", form);
+    console.log(JSON.parse(response.data).data.url)
     return JSON.parse(response.data).data.url
 }
 async function pushWechat(imageUrl, analysis) {
@@ -587,5 +588,5 @@ async function pushWechat(imageUrl, analysis) {
         })
     await browser.close()
     var imageUrl = await uploadImage("screenshot.png")
-    await pushWechat(imageUrl, analysis)
+    //await pushWechat(imageUrl, analysis)
 })();
