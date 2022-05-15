@@ -581,11 +581,11 @@ async function pushWechat(imageUrl, analysis) {
             clip:{
                 x:0,
                 y:0,
-                height:size+100,
+                height:size,
                 width:450
             }
         })
     await browser.close()
     var imageUrl = await uploadImage("screenshot.png")
-    //await pushWechat(imageUrl, analysis)
+    await pushWechat(imageUrl, analysis)
 })();
