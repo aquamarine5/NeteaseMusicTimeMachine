@@ -1,62 +1,62 @@
 const puppeteer = require("puppeteer");
-const formdata=require("form-data")
+const formdata = require("form-data")
 const echarts = require("echarts");
-const axios=require('axios');
+const axios = require('axios');
 const fs = require("fs");
 async function getAnalysis() {
-    var cookie=process.env.NETEASEMUSIC_COOKIE
-    var response=await new axios.Axios({
-        headers:{
-            Cookie:cookie
+    var cookie = process.env.NETEASEMUSIC_COOKIE
+    var response = await new axios.Axios({
+        headers: {
+            Cookie: cookie
         }
     }).get("https://music.163.com/prime/m/viptimemachine")
-    var data=new RegExp("window.__INITIAL_DATA__ = ({.+})</script>").exec(response.data)[0]
-    data=data.replace("window.__INITIAL_DATA__ = ","").replace("</script>","")
+    var data = new RegExp("window.__INITIAL_DATA__ = ({.+})</script>").exec(response.data)[0]
+    data = data.replace("window.__INITIAL_DATA__ = ", "").replace("</script>", "")
     return JSON.parse(data).reportFlowData.detail[0]
 }
-async function uploadImage(imagePath){
-    async function getLength(form){
-        return new Promise((resolve,reject)=>{
-            form.getLength((err,length)=>{
-                if(err) reject(err)
-                else resolve(length)
-            })
-        })
-    }
-    var smmsToken=process.env.SMMS_TOKEN
-    var form=new formdata()
-    
-    form.append("smfile",fs.createReadStream("screenshot.png"))
-    var request=new axios.Axios({
-        headers:form.getHeaders(
-            {"Authorization":smmsToken
-        }),
+async function uploadImage(imagePath) {
+    var smmsToken = process.env.SMMS_TOKEN
+    var form = new formdata()
+
+    form.append("smfile", fs.createReadStream("screenshot.png"))
+    var request = new axios.Axios({
+        headers: form.getHeaders(
+            {
+                "Authorization": smmsToken
+            }),
     })
-    var response=await request.post("https://sm.ms/api/v2/upload",form);
+    var response = await request.post("https://sm.ms/api/v2/upload", form);
     return JSON.parse(response.data).data.url
 }
-async function pushWechat(imageUrl){
-    var serverToken=process.env.WX_SERVER_TOKEN
-    var response=await new axios.Axios({}).get(
-        encodeURI("https://sctapi.ftqq.com/"+serverToken+".send?title=网易云&desp="+imageUrl)
+async function pushWechat(imageUrl, analysis) {
+    var serverToken = process.env.WX_SERVER_TOKEN
+    if (serverToken == undefined) return
+    var startDate = new Date(analysis.weekStartTime)
+    var endDate = new Date(analysis.weekEndTime)
+    var response = await new axios.Axios({}).get(
+        encodeURI(
+            "https://sctapi.ftqq.com/" + serverToken + ".send?title=" +
+            "网易云音乐" + (startDate.getMonth() + 1) + "." + startDate.getDate() + "-" + 
+            (endDate.getMonth() + 1) + "." + endDate.getDate() + "黑胶时光机分析图片" +
+            "&desp=" + "![](" + imageUrl + ")")
     )
     console.log(response.data)
 }
 (async () => {
-    const analysis=await getAnalysis()
+    const analysis = await getAnalysis()
     const browser = await puppeteer.launch({
         //executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
         defaultViewport: {
-            width: 500,
+            width: 450,
             height: 2000
         }
         //, headless: false
-         ,dumpio: true
+        , dumpio: true
     });
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
     const page = await browser.newPage();
     await page.setContent(baseHtml);
-
+    console.log(analysis)
     await page.evaluate(analysis => {
         function addElement(document, tagName, parent, className = "", text = "") {
             var element = document.createElement(tagName);
@@ -83,6 +83,7 @@ async function pushWechat(imageUrl){
         }
         function loadListenCount(document, analysis) {
             var songsc = analysis.data.listenSongs
+            if (songsc == undefined) return
             var count = analysis.data.listenWeekCount
             var time = analysis.data.listenWeekTime / 60 / 60
             var trunctime = Math.trunc(time)
@@ -123,6 +124,10 @@ async function pushWechat(imageUrl){
             var container = addContainer(document, "b-container b-cont-bg vtw-rpt-main")
             var hours = []
             var dates = []
+            if (analysis.data.details == undefined) {
+                container.remove()
+                return
+            }
             analysis.data.details.forEach(element => {
                 hours.push(Math.trunc(element.duration / 60 / 60))
                 var date = new Date(element.day)
@@ -142,7 +147,7 @@ async function pushWechat(imageUrl){
                         l = []
                     } else c++; l.push(element)
                 })
-                if(c!=0) j.push(l);i.push(c)
+                if (c != 0) j.push(l); i.push(c)
                 var ii = Math.max(...i)
                 var d = j[i.findIndex(e => e == ii)]
                 var length = d.length
@@ -156,6 +161,7 @@ async function pushWechat(imageUrl){
             var panel = addElement(document, "div", container, "bc-r-cont")
             var chart = echarts.init(panel)
             chart.setOption({
+                animation: false,
                 grid: {
                     top: 30,
                     bottom: 0,
@@ -254,6 +260,7 @@ async function pushWechat(imageUrl){
         }
         function loadEmotion(document, analysis) {
             var wstime = analysis.weekStartTime
+            if (wstime == undefined) return
             var tdata = []
             for (let index = 0; index < 7; index++) {
                 var date = new Date(wstime + 86400000 * index)
@@ -261,7 +268,7 @@ async function pushWechat(imageUrl){
                     tdata.push({
                         value: date.getMonth() + 1 + "." + date.getDate(),
                         textStyle: {
-                            align: index==0?"left":"right"
+                            align: index == 0 ? "left" : "right"
                         }
                     })
                 }
@@ -350,7 +357,7 @@ async function pushWechat(imageUrl){
             }
             var chart = echarts.init(addElement(document, "div", container, "mood-chart"))
             chart.setOption({
-                animation:false,
+                animation: false,
                 grid: {
                     top: 30,
                     bottom: 0,
@@ -432,6 +439,7 @@ async function pushWechat(imageUrl){
             });
         }
         function loadYear(document, analysis) {
+            if (analysis.data.musicYear == undefined) return
             var year = analysis.data.musicYear
             var percents = year.yearPercents
             var singles = year.yearSingles
@@ -478,6 +486,7 @@ async function pushWechat(imageUrl){
                 index++;
             })
             chart.setOption({
+                animation: false,
                 series: [
                     {
                         clockwise: true,
@@ -537,6 +546,9 @@ async function pushWechat(imageUrl){
                 addElement(document, "span", detail, "f-cor-d", time + fixTime(date.getHours()) + ":" + fixTime(date.getMinutes()))
                 drawSongDetail(document, song, li)
             }
+            if (analysis.data.startSong == undefined) {
+                return
+            }
             var startSong = analysis.data.startSong
             var startDate = new Date(analysis.data.startTime)
             var endSong = analysis.data.endSong
@@ -559,12 +571,21 @@ async function pushWechat(imageUrl){
         }
         main()
     }, analysis)
+    var size=await page.evaluate(()=>{
+        return document.getElementsByClassName("vtw-wrapper page-bg")[0].offsetHeight
+    })
     await page.screenshot(
         {
             path: "screenshot.png",
-            fullPage: true
+            fullPage: true,
+            clip:{
+                x:0,
+                y:0,
+                height:size+100,
+                width:450
+            }
         })
     await browser.close()
-    var imageUrl=await uploadImage("screenshot.png")
-    await pushWechat(imageUrl)
+    var imageUrl = await uploadImage("screenshot.png")
+    await pushWechat(imageUrl, analysis)
 })();
