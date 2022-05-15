@@ -29,6 +29,19 @@ jobs:
     - run: npm install puppeteer
     - run: npm install axios
     - run: npm install echarts
+    - name: Setup fonts
+      run: |
+        sudo apt-get install ttf-mscorefonts-installer
+        sudo apt-get install fontconfig
+        fc-list :lang=zh
+        ls -lh /usr/share/fonts/
+        # 拷贝仓库里fonts路径下的所有字体文件到系统字体目录下
+        # 我在仓库d的fonts目录下放了微软雅黑字体
+        cp -rf ./sources/fonts/* /usr/share/fonts/
+        mkfontscale
+        mkfontdir
+        fc-cache
+        fc-list :lang=zh
     - name: Run code and push image
       env:
         SMMS_TOKEN: ${{ secrets.SMMS_TOKEN }}
