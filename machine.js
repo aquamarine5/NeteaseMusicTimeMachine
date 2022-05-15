@@ -578,7 +578,6 @@ async function pushWechat(imageUrl, analysis) {
     await page.screenshot(
         {
             path: "screenshot.png",
-            fullPage: true,
             clip:{
                 x:0,
                 y:0,
