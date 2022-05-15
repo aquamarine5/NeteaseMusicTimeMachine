@@ -38,7 +38,7 @@ async function pushWechat(imageUrl, analysis) {
         encodeURI(
             "https://sctapi.ftqq.com/" + serverToken + ".send?title=" +
             "网易云音乐" + (startDate.getMonth() + 1) + "." + startDate.getDate() + "-" + 
-            (endDate.getMonth() + 1) + "." + endDate.getDate() + "黑胶时光机分析图片" +
+            (endDate.getMonth() + 1) + "." + (endDate.getDate() + 1) + "黑胶时光机分析图片" +
             "&desp=" + "![](" + imageUrl + ")")
     )
     console.log(response.data)
