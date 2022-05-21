@@ -38,4 +38,4 @@
 
 > 图片中的GenshinBirthdayScheduleTasks仅做示意，此Action为作者的一个项目，可以在[这里](https://github.com/aquamarine5/GenshinBirthdayReceiver)查看。
 
-- 至此 部署完毕。如果部署正确，您的微信会收到一条推送消息
+- 至此 部署完毕。如果部署正确，您的微信会收到一条推送消息。
