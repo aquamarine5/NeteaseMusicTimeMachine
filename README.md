@@ -1,4 +1,9 @@
 # NeteaseMusicTimeMachine
+
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/aquamarine5/NeteaseMusicTimeMachine)]()
+[![Last commit](https://img.shields.io/github/last-commit/aquamarine5/NeteaseMusicTimeMachine)]()
+![Alt](https://repobeats.axiom.co/api/embed/80a66b80fa4d43fd5823074932c149e6f547e248.svg "Repobeats analytics image")
+
 ## 部署教程 👀
 ### 1. 点击右上角的 Fork 按钮
 - 等待刷新并自动跳转至新页面
