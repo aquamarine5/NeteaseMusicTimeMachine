@@ -7,7 +7,7 @@
 - 注册后登陆，然后前往[Dashboard的API Token](https://sm.ms/home/apitoken)页复制key
 
 ### 3. 前往[网易云音乐](https://music.163.com/)获取Cookie
-- 前往[网易云音乐](https://music.163.com/) 登陆账号
+- 前往 [网易云音乐](https://music.163.com/) 登陆账号
 - 按`F12`，打开`开发者工具`，找到`Network`并点击
 - 按`F5`刷新页面，按下图复制`Cookie`
 
@@ -15,7 +15,7 @@
 
 ### 4. 前往[Server酱](https://sct.ftqq.com/)设置微信推送服务
 - 扫码登录[Server酱](https://sct.ftqq.com/)
-- 前往[页面](https://sct.ftqq.com/sendkey)，点击复制以复制push key
+- 前往 [此页面](https://sct.ftqq.com/sendkey) ，点击复制以复制push key
 
 ### 5. 设置仓库的Secrets
 - 回到自己Fork的Github页面，依次点击`Settings`->`Secrets`->`Actions`->`New repository secret`
