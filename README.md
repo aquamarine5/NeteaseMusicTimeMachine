@@ -2,7 +2,8 @@
 
 [![Commit Activity](https://img.shields.io/github/commit-activity/m/aquamarine5/NeteaseMusicTimeMachine)]()
 [![Last commit](https://img.shields.io/github/last-commit/aquamarine5/NeteaseMusicTimeMachine)]()
-![Alt](https://repobeats.axiom.co/api/embed/80a66b80fa4d43fd5823074932c149e6f547e248.svg "Repobeats analytics image")
+
+![1653202468_1_.jpg](https://s2.loli.net/2022/05/22/6uXZUTajChSw42s.png)
 
 ## 部署教程 👀
 ### 1. 点击右上角的 Fork 按钮
@@ -44,3 +45,8 @@
 > 图片中的GenshinBirthdayScheduleTasks仅做示意，此Action为作者的一个项目，可以在[这里](https://github.com/aquamarine5/GenshinBirthdayReceiver)查看。
 
 - 至此 部署完毕。如果部署正确，您的微信会收到一条推送消息。
+
+
+
+![Alt](https://repobeats.axiom.co/api/embed/80a66b80fa4d43fd5823074932c149e6f547e248.svg "Repobeats analytics image")
+
