@@ -18,7 +18,7 @@ async function uploadImage(imagePath) {
     var smmsToken = process.env.SMMS_TOKEN
     var form = new formdata()
 
-    form.append("smfile", fs.createReadStream("screenshot.png"))
+    form.append("smfile", fs.createReadStream(imagePath))
     var request = new axios.Axios({
         headers: form.getHeaders(
             {
@@ -37,13 +37,13 @@ async function pushWechat(imageUrl, analysis) {
     var response = await new axios.Axios({}).get(
         encodeURI(
             "https://sctapi.ftqq.com/" + serverToken + ".send?title=" +
-            "网易云音乐" + (startDate.getMonth() + 1) + "." + startDate.getDate() + "-" + 
+            "网易云音乐" + (startDate.getMonth() + 1) + "." + startDate.getDate() + "-" +
             (endDate.getMonth() + 1) + "." + (endDate.getDate() + 1) + "黑胶时光机分析图片" +
             "&desp=" + "![](" + imageUrl + ")")
     )
     console.log(response.data)
 }
-(async () => {
+async function main() {
     const analysis = await getAnalysis()
     const browser = await puppeteer.launch({
         //executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
@@ -95,8 +95,10 @@ async function pushWechat(imageUrl, analysis) {
             var timep = addElement(document, "p", time, "t f-cor-c")
             addElement(document, "span", timep, "f-cor-b", trunctime)
             timep.append(" 小时 ")
-            addElement(document, "span", timep, "f-cor-b", minutetime)
-            timep.append(" 分")
+            if (minutetime >= 1) {
+                addElement(document, "span", timep, "f-cor-b", minutetime)
+                timep.append(" 分")
+            }
             addElement(document, "div", container, "his-gap")
             var countd = addElement(document, "div", container, "his-item")
             var countp = addElement(document, "p", countd, "t f-cor-c")
@@ -132,7 +134,7 @@ async function pushWechat(imageUrl, analysis) {
             analysis.data.details.forEach(element => {
                 hours.push(Math.trunc(element.duration / 60 / 60))
                 var date = new Date(element.day)
-                dates.push(date.getMonth() + 1 + ":" + date.getDate())
+                dates.push(date.getMonth() + 1 + "." + date.getDate())
             })
             var mine = Math.min(...hours)
             if (mine == 0) {
@@ -146,7 +148,7 @@ async function pushWechat(imageUrl, analysis) {
                         j.push(l)
                         c = 0
                         l = []
-                    } else c++; l.push(element)
+                    } else c++, l.push(element)
                 })
                 if (c != 0) j.push(l); i.push(c)
                 var ii = Math.max(...i)
@@ -539,12 +541,14 @@ async function pushWechat(imageUrl, analysis) {
                     var text = "，音乐一直陪你到"
                     var time = "深夜"
                 } else {
-                    var text = "，你就开始听歌了"
+                    var text = "，"
                     var time = "清晨"
                 }
                 var detail = addElement(document, "div", li, "f-fs14 type s-fc1 f-cor-b")
                 detail.append(date.getMonth() + 1 + "月" + date.getDate() + "日" + text)
-                addElement(document, "span", detail, "f-cor-d", time + fixTime(date.getHours()) + ":" + fixTime(date.getMinutes()))
+                // getUTCHours()+8 -> UTC+8, see #8
+                addElement(document, "span", detail, "f-cor-d", time + fixTime(date.getUTCHours() + 8) + ":" + fixTime(date.getMinutes()))
+                if (!isEnd) detail.append("你就开始听歌了")
                 drawSongDetail(document, song, li)
             }
             if (analysis.data.startSong == undefined) {
@@ -572,20 +576,25 @@ async function pushWechat(imageUrl, analysis) {
         }
         main()
     }, analysis)
-    var size=await page.evaluate(()=>{
+    var size = await page.evaluate(() => {
         return document.getElementsByClassName("vtw-wrapper page-bg")[0].offsetHeight
     })
+    console.log(size)
+    /* waiting issue #4
+    await page.setViewport({
+        width:450,
+        height:size+30
+    })
+    */
     await page.screenshot(
         {
             path: "screenshot.png",
-            clip:{
-                x:0,
-                y:0,
-                height:size,
-                width:450
-            }
+            fullPage: true
         })
     await browser.close()
     var imageUrl = await uploadImage("screenshot.png")
     await pushWechat(imageUrl, analysis)
-})();
+};
+
+
+main.call()

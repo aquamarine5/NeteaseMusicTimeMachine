@@ -29,13 +29,11 @@ jobs:
       run: |
         sudo apt-get install ttf-mscorefonts-installer
         sudo apt-get install fontconfig
-        fc-list :lang=zh
         ls -lh /usr/share/fonts/
         cp -rf ./sources/fonts/* /usr/share/fonts/
         mkfontscale
         mkfontdir
         fc-cache
-        echo "#############################################"
         fc-list :lang=zh
     - name: Run code and push image
       env:
