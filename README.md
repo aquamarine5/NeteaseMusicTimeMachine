@@ -2,6 +2,7 @@
 
 [![Commit Activity](https://img.shields.io/github/commit-activity/m/aquamarine5/NeteaseMusicTimeMachine)]()
 [![Last commit](https://img.shields.io/github/last-commit/aquamarine5/NeteaseMusicTimeMachine)]()
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/aquamarine5/NeteaseMusicTimeMachine.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/aquamarine5/NeteaseMusicTimeMachine/context:javascript)
 
 ![1653202468_1_.jpg](https://s2.loli.net/2022/05/22/6uXZUTajChSw42s.png)
 
