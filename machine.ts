@@ -10,7 +10,7 @@ const devMode = process.argv.indexOf("--dev-mode") != -1
 async function getAnalysis() {
     var cookie = process.env.NETEASEMUSIC_COOKIE
     if (cookie == undefined) {
-
+        throw new Error("");
     }
     var response = await new axios.Axios({
         headers: {
@@ -18,10 +18,11 @@ async function getAnalysis() {
         }
     }).get("https://music.163.com/prime/m/viptimemachine")
     var data = new RegExp("window.__INITIAL_DATA__ = ({.+})</script>").exec(response.data)[0]
+    if(data==undefined) throw new Error("");
     data = data.replace("window.__INITIAL_DATA__ = ", "").replace("</script>", "")
     return JSON.parse(data).reportFlowData.detail[0]
 }
-async function uploadImage(imagePath) {
+async function uploadImage(imagePath:string) {
     var smmsToken = process.env.SMMS_TOKEN
     var form = new formdata()
 
@@ -36,7 +37,7 @@ async function uploadImage(imagePath) {
     console.log(JSON.parse(response.data).data.url)
     return JSON.parse(response.data).data.url
 }
-async function pushWechat(imageUrl, analysis) {
+async function pushWechat(imageUrl:string, analysis:any) {
     var serverToken = process.env.WX_SERVER_TOKEN
     if (serverToken == undefined) return
     var startDate = new Date(analysis.weekStartTime)
@@ -52,7 +53,7 @@ async function pushWechat(imageUrl, analysis) {
 }
 async function main() {
     const analysis = await getAnalysis()
-    var launchOptions = {
+    var launchOptions:any = {
         defaultViewport: {
             width: 450,
             height: 2000
@@ -67,18 +68,18 @@ async function main() {
     await page.setContent(baseHtml);
     console.log(analysis)
     await page.evaluate(analysis => {
-        function addElement(document, tagName, parent, className = "", text = "") {
+        function addElement(document:Document, tagName:string, parent:Element, className:string = "", text:string = "") {
             var element = document.createElement(tagName);
             if (className != "") element.setAttribute("class", className);
             if (text != "") element.textContent = text;
             parent.appendChild(element);
             return element;
         }
-        function addContainer(document, className = "b-container b-cont-bg ") {
+        function addContainer(document:Document, className:string = "b-container b-cont-bg ") {
             var wrapper = document.getElementsByClassName("vtw-wrapper page-bg")[0]
             return addElement(document, "div", wrapper, className);
         }
-        function drawSongDetail(document, song, parent) {
+        function drawSongDetail(document:Document, song:any, parent:HTMLElement) {
             var area = addElement(document, "div", parent, "f-flvc ")
             var figure = addElement(document, "figure", area, "img f-pr f-flex00")
             var image = addElement(document, "img", figure, "f-prafll ")
@@ -90,7 +91,7 @@ async function main() {
             if (song.tag != null) addElement(document, "span", div, "name-label f-cor-d f-flex00", song.tag)
             addElement(document, "p", detail, "f-fs12 artist s-fc2 f-thide f-cor-g", song.artistNames)
         }
-        function loadListenCount(document, analysis) {
+        function loadListenCount(document:Document, analysis:any) {
             var songsc = analysis.data.listenSongs
             if (songsc == undefined) return
             var count = analysis.data.listenWeekCount
@@ -109,7 +110,7 @@ async function main() {
             }
             console.log(analysis.data.percent)
             if (analysis.data.percent != undefined) {
-                var timepp = addElement(document, "p", time, "s f-cor-c")
+                var timepp = addElement(document, "p", timed, "s f-cor-c")
                 counts.append("超过了云村")
                 addElement(document, "span", timepp, "f-cor-d", parseFloat(analysis.data.percent) * 100 + "%")
                 counts.append("的小伙伴")
@@ -125,7 +126,7 @@ async function main() {
             addElement(document, "span", counts, "f-cor-d", songsc + "首")
             counts.append("歌")
         }
-        function loadKeyword(document, analysis) {
+        function loadKeyword(document:Document, analysis:any) {
             var keyword = analysis.data.keyword
             var subTitle = analysis.data.subTitle
             var container = addContainer(document, "b-container b-cont-bg kw-wrap");
@@ -139,7 +140,7 @@ async function main() {
                 else sp.append(element)
             }
         }
-        function loadTime(document, analysis) {
+        function loadTime(document:Document, analysis:any) {
             var container = addContainer(document, "b-container b-cont-bg vtw-rpt-main")
             var hours = []
             var dates = []
@@ -277,7 +278,7 @@ async function main() {
                 ]
             })
         }
-        function loadEmotion(document, analysis) {
+        function loadEmotion(document:Document, analysis:any) {
             var wstime = analysis.weekStartTime
             if (wstime == undefined) return
             var tdata = []
@@ -433,7 +434,7 @@ async function main() {
                 }
             })
         }
-        function loadCommonStyle(document, analysis) {
+        function loadCommonStyle(document:Document, analysis:any) {
             var container = addContainer(document)
             addElement(document, "p", container, "f-fs16 f-fw1 b-cont-tit f-cor-b", "常听曲风")
             var panel = addElement(document, "div", container, "o-st-list")
@@ -458,7 +459,7 @@ async function main() {
                 index++;
             });
         }
-        function loadYear(document, analysis) {
+        function loadYear(document:Document, analysis:any) {
             if (analysis.data.musicYear == undefined) return
             var year = analysis.data.musicYear
             var percents = year.yearPercents
@@ -550,7 +551,7 @@ async function main() {
                 drawSongDetail(document, element, addElement(document, "li", ul, "song-item"))
             })
         }
-        function loadStartEnd(document, analysis) {
+        function loadStartEnd(document:Document, analysis:any) {
             function drawLi(ul, song, date, isEnd) {
                 function fixTime(time) {
                     if (time < 10) return "0" + time

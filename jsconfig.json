@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "target": "es6",
+        "jsx": "preserve",
+        "strictFunctionTypes": true,
+        "lib": ["dom","ES5","ES6"]
+    },
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ]
+}

@@ -22,9 +22,14 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm install puppeteer
-    - run: npm install axios
-    - run: npm install echarts
+    - name: Install Requirements
+    - run: |
+      npm install puppeteer
+      npm install axios
+      npm install echarts
+      npm install typescript
+      npm install ts-node
+      npm install -D tslib @types/node
     - name: Setup fonts
       run: |
         sudo apt-get install ttf-mscorefonts-installer
@@ -40,4 +45,4 @@ jobs:
         SMMS_TOKEN: ${{ secrets.SMMS_TOKEN }}
         WX_SERVER_TOKEN: ${{ secrets.WX_SERVER_TOKEN }}
         NETEASEMUSIC_COOKIE: ${{ secrets.NETEASEMUSIC_COOKIE }}
-      run: node machine.ts
+      run: ts-node machine.ts
