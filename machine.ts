@@ -2,7 +2,7 @@ import formdata from "form-data";
 import echarts from "echarts";
 import axios from 'axios';
 import fs from "fs";
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 
 const showDiff = process.argv.indexOf("--show-diff") != -1 // An experimental feature
 const devMode = process.argv.indexOf("--dev-mode") != -1
