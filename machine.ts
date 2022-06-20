@@ -1,10 +1,17 @@
-const puppeteer = require("puppeteer");
-const formdata = require("form-data")
-const echarts = require("echarts");
-const axios = require('axios');
-const fs = require("fs");
+import formdata from "form-data";
+import echarts from "echarts";
+import axios from 'axios';
+import fs from "fs";
+import puppeteer from "puppeteer-core";
+
+const showDiff = process.argv.indexOf("--show-diff") != -1 // An experimental feature
+const devMode = process.argv.indexOf("--dev-mode") != -1
+
 async function getAnalysis() {
     var cookie = process.env.NETEASEMUSIC_COOKIE
+    if (cookie == undefined) {
+
+    }
     var response = await new axios.Axios({
         headers: {
             Cookie: cookie
@@ -45,15 +52,16 @@ async function pushWechat(imageUrl, analysis) {
 }
 async function main() {
     const analysis = await getAnalysis()
-    const browser = await puppeteer.launch({
-        //executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    var launchOptions = {
         defaultViewport: {
             width: 450,
             height: 2000
         }
-        //, headless: false
+        , headless: false
         , dumpio: true
-    });
+    }
+    if (devMode) launchOptions["executablePath"] = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+    const browser = await puppeteer.launch(launchOptions);
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
     const page = await browser.newPage();
     await page.setContent(baseHtml);
@@ -91,19 +99,27 @@ async function main() {
             var minutetime = Math.round((time - trunctime) * 60)
             var base = addContainer(document, "his-block")
             var container = addElement(document, "div", base, "b-container b-cont-bg his-cont")
-            var time = addElement(document, "div", container, "his-item")
-            var timep = addElement(document, "p", time, "t f-cor-c")
-            addElement(document, "span", timep, "f-cor-b", trunctime)
+            var timed = addElement(document, "div", container, "his-item")
+            var timep = addElement(document, "p", timed, "t f-cor-c")
+            addElement(document, "span", timep, "f-cor-b", trunctime.toString())
             timep.append(" 小时 ")
             if (minutetime >= 1) {
-                addElement(document, "span", timep, "f-cor-b", minutetime)
+                addElement(document, "span", timep, "f-cor-b", minutetime.toString())
                 timep.append(" 分")
+            }
+            console.log(analysis.data.percent)
+            if (analysis.data.percent != undefined) {
+                var timepp = addElement(document, "p", time, "s f-cor-c")
+                counts.append("超过了云村")
+                addElement(document, "span", timepp, "f-cor-d", parseFloat(analysis.data.percent) * 100 + "%")
+                counts.append("的小伙伴")
             }
             addElement(document, "div", container, "his-gap")
             var countd = addElement(document, "div", container, "his-item")
             var countp = addElement(document, "p", countd, "t f-cor-c")
             addElement(document, "span", countp, "f-cor-b", count)
             countp.append("次")
+
             var counts = addElement(document, "p", countd, "s f-cor-c")
             counts.append("本周已听")
             addElement(document, "span", counts, "f-cor-d", songsc + "首")
@@ -153,7 +169,7 @@ async function main() {
                 if (c != 0) j.push(l); i.push(c)
                 var ii = Math.max(...i)
                 var d = j[i.findIndex(e => e == ii)]
-                var length = d.length
+                var length: number = d.length
                 var gridp = Math.min(...d)
             }
             else {
@@ -348,7 +364,8 @@ async function main() {
             detail.append("与")
             addElement(document, "span", detail, "f-cor-d f-fw1", analysis.data.musicEmotion.subTitle[1])
             var legend = addElement(document, "div", container, "mood-legend")
-            const label = ["快乐、兴奋", "浪漫、甜蜜",
+            const label = [
+                "快乐、兴奋", "浪漫、甜蜜",
                 "思念、抒情", "伤感、孤独"]
             for (let index = 3; index >= 0; index--) {
                 var item = addElement(document, "div", legend, "m-item f-cor-g")
@@ -465,27 +482,30 @@ async function main() {
                 ["#59DEE2", "#A5FCFC"]
             ]
             percents.forEach(element => {
-                datas.push({
-                    name: element.startYear + "-" + element.endYear + "s",
-                    value: Math.trunc(parseFloat(element.percent) * 100),
-                    itemStyle: {
-                        opacity: 0.8,
-                        color: {
-                            type: "linear",
-                            x: 0, x2: 1, y: 0, y2: 1,
-                            colorStops: [
-                                {
-                                    offset: 0,
-                                    color: colorList[index][0]
-                                },
-                                {
-                                    offset: 1,
-                                    color: colorList[index][1]
-                                }
-                            ]
+                var value = Math.trunc(parseFloat(element.percent) * 100)
+                if (value != 0) {
+                    datas.push({
+                        name: element.startYear + "-" + element.endYear + "s",
+                        value: value,
+                        itemStyle: {
+                            opacity: 0.8,
+                            color: {
+                                type: "linear",
+                                x: 0, x2: 1, y: 0, y2: 1,
+                                colorStops: [
+                                    {
+                                        offset: 0,
+                                        color: colorList[index][0]
+                                    },
+                                    {
+                                        offset: 1,
+                                        color: colorList[index][1]
+                                    }
+                                ]
+                            }
                         }
-                    }
-                })
+                    })
+                }
                 index++;
             })
             chart.setOption({
@@ -577,7 +597,7 @@ async function main() {
         main()
     }, analysis)
     var size = await page.evaluate(() => {
-        return document.getElementsByClassName("vtw-wrapper page-bg")[0].offsetHeight
+        return document.getElementsByClassName("vtw-wrapper page-bg")[0]["offsetHeight"]
     })
     console.log(size)
     /* waiting issue #4
@@ -586,15 +606,21 @@ async function main() {
         height:size+30
     })
     */
+
+    var startDate = new Date(analysis.weekStartTime)
     await page.screenshot(
         {
-            path: "screenshot.png",
+            path: devMode ? "wyy_report_" +
+                startDate.getUTCFullYear() + "_" + startDate.getUTCMonth() + "_" + (startDate.getUTCDate() + 1) +
+                ".png" : "screenshot.png",
             fullPage: true
         })
-    await browser.close()
-    var imageUrl = await uploadImage("screenshot.png")
-    await pushWechat(imageUrl, analysis)
+    if (devMode) {
+        await browser.close()
+        var imageUrl = await uploadImage("screenshot.png")
+        await pushWechat(imageUrl, analysis)
+    }
 };
 
 
-main.call()
+main.call(null)

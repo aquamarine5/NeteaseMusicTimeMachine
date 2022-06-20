@@ -40,4 +40,4 @@ jobs:
         SMMS_TOKEN: ${{ secrets.SMMS_TOKEN }}
         WX_SERVER_TOKEN: ${{ secrets.WX_SERVER_TOKEN }}
         NETEASEMUSIC_COOKIE: ${{ secrets.NETEASEMUSIC_COOKIE }}
-      run: node machine.js
+      run: node machine.ts
