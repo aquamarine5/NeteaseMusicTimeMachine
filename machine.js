@@ -3,19 +3,22 @@ const formdata = require("form-data")
 const echarts = require("echarts");
 const axios = require('axios');
 const fs = require("fs");
+
+const devMode = process.argv.indexOf("--dev-mode") != -1
+
 async function getAnalysis() {
     var cookie = process.env.NETEASEMUSIC_COOKIE
-    if(cookie==undefined) throw new Error()
+    if (cookie == undefined) throw new Error()
     var response = await new axios.Axios({
         headers: {
             Cookie: cookie
         }
     }).get("https://music.163.com/prime/m/viptimemachine")
     var reg = new RegExp("window.__INITIAL_DATA__ = ({.+})</script>").exec(response.data)
-    if(reg==null){
+    if (reg == null) {
         throw new Error()
     } else {
-        var data=reg[0]
+        var data = reg[0]
     }
     data = data.replace("window.__INITIAL_DATA__ = ", "").replace("</script>", "")
     return JSON.parse(data).reportFlowData.detail[0]
@@ -51,15 +54,23 @@ async function pushWechat(imageUrl, analysis) {
 }
 async function main() {
     const analysis = await getAnalysis()
-    const browser = await puppeteer.launch({
-        //executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-        defaultViewport: {
-            width: 450,
-            height: 2000
-        }
-        //, headless: false
-        , dumpio: true
-    });
+    var launchOptions = devMode ?
+        {
+            defaultViewport: {
+                width: 450,
+                height: 2000
+            },
+            dumpio: true
+        } : {
+            executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+            defaultViewport: {
+                width: 450,
+                height: 2000
+            }
+            , headless: false
+            , dumpio: true
+        };
+    const browser = await puppeteer.launch(launchOptions);
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
     const page = await browser.newPage();
     await page.setContent(baseHtml);
@@ -607,13 +618,15 @@ async function main() {
     await page.screenshot(
         {
             path: "wyy_report_" +
-                  startDate.getUTCFullYear() + "_" + startDate.getUTCMonth() + "_" + (startDate.getUTCDate() + 1) +
-                  ".png",
+                startDate.getUTCFullYear() + "_" + startDate.getUTCMonth() + "_" + (startDate.getUTCDate() + 1) +
+                ".png",
             fullPage: true
         })
-    await browser.close()
-    var imageUrl = await uploadImage("screenshot.png")
-    await pushWechat(imageUrl, analysis)
+    if (!devMode) {
+        await browser.close()
+        var imageUrl = await uploadImage("screenshot.png")
+        await pushWechat(imageUrl, analysis)
+    }
 };
 
 
