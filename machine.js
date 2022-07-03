@@ -5,12 +5,18 @@ const axios = require('axios');
 const fs = require("fs");
 async function getAnalysis() {
     var cookie = process.env.NETEASEMUSIC_COOKIE
+    if(cookie==undefined) throw new Error()
     var response = await new axios.Axios({
         headers: {
             Cookie: cookie
         }
     }).get("https://music.163.com/prime/m/viptimemachine")
-    var data = new RegExp("window.__INITIAL_DATA__ = ({.+})</script>").exec(response.data)[0]
+    var reg = new RegExp("window.__INITIAL_DATA__ = ({.+})</script>").exec(response.data)
+    if(reg==null){
+        throw new Error()
+    } else {
+        var data=reg[0]
+    }
     data = data.replace("window.__INITIAL_DATA__ = ", "").replace("</script>", "")
     return JSON.parse(data).reportFlowData.detail[0]
 }
@@ -91,19 +97,27 @@ async function main() {
             var minutetime = Math.round((time - trunctime) * 60)
             var base = addContainer(document, "his-block")
             var container = addElement(document, "div", base, "b-container b-cont-bg his-cont")
-            var time = addElement(document, "div", container, "his-item")
-            var timep = addElement(document, "p", time, "t f-cor-c")
-            addElement(document, "span", timep, "f-cor-b", trunctime)
+            var timed = addElement(document, "div", container, "his-item")
+            var timep = addElement(document, "p", timed, "t f-cor-c")
+            addElement(document, "span", timep, "f-cor-b", trunctime.toString())
             timep.append(" 小时 ")
             if (minutetime >= 1) {
-                addElement(document, "span", timep, "f-cor-b", minutetime)
+                addElement(document, "span", timep, "f-cor-b", minutetime.toString())
                 timep.append(" 分")
+            }
+            console.log(analysis.data.percent)
+            if (analysis.data.percent != undefined) {
+                var timepp = addElement(document, "p", timed, "s f-cor-c")
+                timepp.append("超过了云村")
+                addElement(document, "span", timepp, "f-cor-d", parseFloat(analysis.data.percent) * 100 + "%")
+                timepp.append("的小伙伴")
             }
             addElement(document, "div", container, "his-gap")
             var countd = addElement(document, "div", container, "his-item")
             var countp = addElement(document, "p", countd, "t f-cor-c")
             addElement(document, "span", countp, "f-cor-b", count)
             countp.append("次")
+
             var counts = addElement(document, "p", countd, "s f-cor-c")
             counts.append("本周已听")
             addElement(document, "span", counts, "f-cor-d", songsc + "首")
@@ -465,27 +479,30 @@ async function main() {
                 ["#59DEE2", "#A5FCFC"]
             ]
             percents.forEach(element => {
-                datas.push({
-                    name: element.startYear + "-" + element.endYear + "s",
-                    value: Math.trunc(parseFloat(element.percent) * 100),
-                    itemStyle: {
-                        opacity: 0.8,
-                        color: {
-                            type: "linear",
-                            x: 0, x2: 1, y: 0, y2: 1,
-                            colorStops: [
-                                {
-                                    offset: 0,
-                                    color: colorList[index][0]
-                                },
-                                {
-                                    offset: 1,
-                                    color: colorList[index][1]
-                                }
-                            ]
+                var value = Math.trunc(parseFloat(element.percent) * 100)
+                if (value != 0) {
+                    datas.push({
+                        name: element.startYear + "-" + element.endYear + "s",
+                        value: value,
+                        itemStyle: {
+                            opacity: 0.8,
+                            color: {
+                                type: "linear",
+                                x: 0, x2: 1, y: 0, y2: 1,
+                                colorStops: [
+                                    {
+                                        offset: 0,
+                                        color: colorList[index][0]
+                                    },
+                                    {
+                                        offset: 1,
+                                        color: colorList[index][1]
+                                    }
+                                ]
+                            }
                         }
-                    }
-                })
+                    })
+                }
                 index++;
             })
             chart.setOption({
@@ -577,7 +594,7 @@ async function main() {
         main()
     }, analysis)
     var size = await page.evaluate(() => {
-        return document.getElementsByClassName("vtw-wrapper page-bg")[0].offsetHeight
+        return document.getElementsByClassName("vtw-wrapper page-bg")[0]["offsetHeight"]
     })
     console.log(size)
     /* waiting issue #4
@@ -586,9 +603,12 @@ async function main() {
         height:size+30
     })
     */
+    var startDate = new Date(analysis.weekStartTime)
     await page.screenshot(
         {
-            path: "screenshot.png",
+            path: "wyy_report_" +
+                  startDate.getUTCFullYear() + "_" + startDate.getUTCMonth() + "_" + (startDate.getUTCDate() + 1) +
+                  ".png",
             fullPage: true
         })
     await browser.close()
@@ -597,4 +617,4 @@ async function main() {
 };
 
 
-main.call()
+main.call(null)
