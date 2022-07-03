@@ -56,19 +56,19 @@ async function main() {
     const analysis = await getAnalysis()
     var launchOptions = devMode ?
         {
+            executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+            defaultViewport: {
+                width: 450,
+                height: 2000
+            },
+            headless: false,
+            dumpio: true
+        } : {
             defaultViewport: {
                 width: 450,
                 height: 2000
             },
             dumpio: true
-        } : {
-            executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-            defaultViewport: {
-                width: 450,
-                height: 2000
-            }
-            , headless: false
-            , dumpio: true
         };
     const browser = await puppeteer.launch(launchOptions);
     var baseHtml = fs.readFileSync("sources/base.html", "utf-8");
