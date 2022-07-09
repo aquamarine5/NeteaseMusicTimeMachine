@@ -615,16 +615,17 @@ async function main() {
     })
     */
     var startDate = new Date(analysis.weekStartTime)
+    var path="wyy_report_" +
+                startDate.getUTCFullYear() + "_" + startDate.getUTCMonth() + "_" + (startDate.getUTCDate() + 1) +
+                ".png"
     await page.screenshot(
         {
-            path: "wyy_report_" +
-                startDate.getUTCFullYear() + "_" + startDate.getUTCMonth() + "_" + (startDate.getUTCDate() + 1) +
-                ".png",
+            path: path,
             fullPage: true
         })
     if (!devMode) {
         await browser.close()
-        var imageUrl = await uploadImage("screenshot.png")
+        var imageUrl = await uploadImage(path)
         await pushWechat(imageUrl, analysis)
     }
 };
