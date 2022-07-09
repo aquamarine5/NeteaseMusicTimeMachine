@@ -616,7 +616,7 @@ async function main() {
     */
     var startDate = new Date(analysis.weekStartTime)
     var path="wyy_report_" +
-                startDate.getUTCFullYear() + "_" + (startDate.getUTCMonth() + 2) + "_" + (startDate.getUTCDate() + 1) +
+                startDate.getUTCFullYear() + "_" + (startDate.getUTCMonth() + 1) + "_" + (startDate.getUTCDate() + 1) +
                 ".png"
     await page.screenshot(
         {
