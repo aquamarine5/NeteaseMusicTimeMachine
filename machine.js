@@ -87,6 +87,7 @@ async function main() {
     var path = "wyy_report_" +
         startDate.getUTCFullYear() + "_" + (startDate.getUTCMonth() + 1) + "_" + (startDate.getUTCDate() + 1) +
         ".png"
+    await page.waitForTimeout(10000)
     await page.screenshot(
         {
             path: path,

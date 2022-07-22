@@ -548,17 +548,44 @@ module.exports.evaluate = async function (analysis, page) {
                 "——《" + analysis.data.song.songName + "》")
         }
         function loadListenSongs(document,analysis){
-
+            var section=addElement("section",addContainer(document))
+            addElement("h3",section,"f-fs16 f-fw1 s-fcFFF f-cor-b","听了"+analysis.data.listenSingle.count+"首单曲")
+            var ul=addElement("ul",section,"u-song-list ")
+            var labelledList=[]
+            analysis.data.listenSingle.singles.forEach(element => {
+                drawSongDetail(document,element,addElement("li",ul,"song-item  "))
+                labelledList.push(element.songId)
+            });
+            analysis.data.songInfos.forEach(element => {
+                if(labelledList.findIndex((v)=>v==element.songId)==-1)
+                    drawSongDetail(document,element,addElement("li",ul,"song-item  "))
+            });
         }
         function loadListenAlbums(document,analysis){
             function drawAlbumDetail(document,album,parent){
-
+                var li=addElement("li",parent,"song-item  album-item")
+                var flvc=addElement("div",li,"f-flvc ")
+                var figure=addElement("figure",flvc,"img f-pr f-flex00")
+                addElement("div",figure,"bg f-pa")
+                var img=addElement("img",figure,"f-prafll ")
+                img.setAttribute("src",album.coverUrl)
+                img.setAttribute("heightratio","1")
+                var content=addElement("div",flvc,"f-flex11 content")
+                var flvcc=addElement("div",content,"f-flvc")
+                addElement("p",flvcc,"f-fs14 name s-fc3 f-thide f-cor-f",album.albumName)
+                addElement("span",flvcc,"name-label f-cor-d f-flex00",album.tag)
+                addElement("p",content,"f-fs12 artist s-fc2 f-thide f-cor-g",album.playerName)
             }
             var section=addElement("section",addContainer(document))
             addElement("h3",section,"f-fs16 f-fw1 s-fcFFF f-cor-b","听了"+analysis.data.listenAlbumInfo.count+"个专辑")
+            analysis.data.listenAlbumInfo.details.forEach(element => {
+                drawAlbumDetail(document,element,section)
+            });
         }
         function loadListenPlayers(document,analysis){
-
+            var section=addElement("section",addContainer(document))
+            addElement("h3",section,"f-fs16 f-fw1 s-fcFFF f-cor-b","听了"+analysis.data.listenPlayer.count+"位艺人")
+            
         }
         function main() {
             loadListenCount(document, analysis)
@@ -569,6 +596,9 @@ module.exports.evaluate = async function (analysis, page) {
             loadCommonStyle(document, analysis)
             loadYear(document, analysis)
             loadEmotion(document, analysis)
+            loadListenSongs(document,analysis)
+            loadListenAlbums(document,analysis)
+            loadListenPlayers(document,analysis)
         }
         main()
     }, analysis)
