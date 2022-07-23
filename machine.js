@@ -59,14 +59,14 @@ async function main() {
             executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
             defaultViewport: {
                 width: 500,
-                height: 2500
+                height: 3000
             },
             headless: false,
             dumpio: true
         } : {
             defaultViewport: {
                 width: 500,
-                height: 2500
+                height: 3000
             },
             dumpio: true
         };
