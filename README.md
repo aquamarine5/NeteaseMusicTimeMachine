@@ -9,9 +9,9 @@
 ## 部署教程 👀
 ### 1. 点击右上角的 Fork 按钮
 - 等待刷新并自动跳转至新页面
-### 2. 前往[sm.ms](https://sm.ms/)注册账号并获取Api Key
-- 前往[注册页](https://sm.ms/register)注册账号
-- 注册后登陆，然后前往[Dashboard的API Token](https://sm.ms/home/apitoken)页复制key
+### 2. 前往[smms.app](https://smms.app/)注册账号并获取Api Key
+- 前往[注册页](https://smms.app/register)注册账号
+- 注册后登陆，然后前往[Dashboard的API Token](https://smms.app/home/apitoken)页复制key
 
 ### 3. 前往[网易云音乐](https://music.163.com/)获取Cookie
 - 前往 [网易云音乐](https://music.163.com/) 登陆账号
